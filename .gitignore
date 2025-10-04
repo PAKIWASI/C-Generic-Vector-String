@@ -1,0 +1,10 @@
+
+
+build/
+include/hashmap.h
+src/hashmap.c
+src/main.c
+.clangd
+.cache
+compile_commands.json
+shakespere.txt
