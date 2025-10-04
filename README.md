@@ -6,7 +6,7 @@ A comprehensive C library providing a type-safe generic vector implementation an
 
 ## Features
 
-### 🚀 Generic Vector (`genVec`)
+### Generic Vector (`genVec`)
 - **Type-agnostic**: Works with any data type through `void*` and size parameters
 - **Dynamic resizing**: Automatic growth and shrinkage based on usage patterns
 - **Memory efficient**: Smart capacity management with configurable growth/shrink ratios
@@ -15,7 +15,7 @@ A comprehensive C library providing a type-safe generic vector implementation an
 - **Copy support**: Deep copying with proper memory management
 - **Bounds checking**: Safe operations with comprehensive error handling
 
-### 📝 Dynamic String (`String`)
+### Dynamic String (`String`)
 - **Vector-based**: Built on top of the generic vector for consistent memory management
 - **Null-terminated**: Always maintains proper C string compatibility
 - **Rich API**: Append, insert, remove, search, substring operations
@@ -23,7 +23,7 @@ A comprehensive C library providing a type-safe generic vector implementation an
 - **String operations**: Compare, find, replace, and manipulation functions
 - **C-string interoperability**: Seamless conversion to/from standard C strings
 
-## 📦 Installation
+## Installation
 
 ### Building from Source
 
@@ -40,7 +40,7 @@ gcc main.c gen_vector.o String.o -o my_program
 gcc main.c gen_vector.c String.c -o my_program
 ```
 
-## 🎯 Quick Start
+## Quick Start
 
 ### Generic Vector Example
 
@@ -116,7 +116,7 @@ int main() {
 }
 ```
 
-## 📚 API Reference
+## API Reference
 
 ### Generic Vector API
 
@@ -176,7 +176,7 @@ int main() {
 - `String* string_substr(const String* str, size_t start, size_t length)` - Extract substring
 - `void string_print(const String* str)` - Print string with quotes
 
-## 🔧 Advanced Usage
+## Advanced Usage
 
 ### Working with Custom Data Types
 
@@ -290,7 +290,7 @@ for (int i = 0; i < 1000; i++) {
 genVec_clear(large_vec);  // Clear and reuse
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ### Design Philosophy
 
@@ -327,7 +327,7 @@ The vector uses an intelligent resizing strategy:
 - **Automatic Shrinking**: Vectors shrink when usage drops below 25% capacity
 - **Capacity Preservation**: `genVec_reserve()` only grows, never shrinks
 
-## 🐛 Debugging
+## Debugging
 
 The library provides extensive error messages:
 
@@ -339,7 +339,7 @@ The library provides extensive error messages:
 "replace: need a valid data variable"
 ```
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - [ ] Iterator support for safe traversal
 - [ ] Bulk operations (insert/remove ranges)
@@ -350,14 +350,12 @@ The library provides extensive error messages:
 - [ ] Memory pool allocation for better performance
 - [ ] Template-based C++ wrapper
 
-## 📄 License
+## License
 
 This library is provided as educational software. Feel free to use and modify for your projects.
 
-## 🤝 Contributing
+## Contributing
 
 While this is primarily an educational codebase, suggestions and improvements are welcome!
 
 ---
-
-**Happy Coding!** 🎉
