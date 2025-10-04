@@ -40,16 +40,6 @@ gcc main.c gen_vector.o String.o -o my_program
 gcc main.c gen_vector.c String.c -o my_program
 ```
 
-### File Structure
-```
-project/
-├── gen_vector.h    # Generic vector header
-├── gen_vector.c    # Generic vector implementation
-├── String.h        # String class header
-├── String.c        # String class implementation
-└── main.c          # Your application code
-```
-
 ## 🎯 Quick Start
 
 ### Generic Vector Example
