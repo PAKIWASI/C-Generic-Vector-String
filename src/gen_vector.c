@@ -45,7 +45,8 @@ genVec* genVec_init(size_t n, size_t data_size, genVec_delete_fn del_fn) {
     return vec;
 }
 
-genVec* genVec_init_val(size_t n, const void* val, size_t data_size, genVec_delete_fn del_fn) {
+genVec* genVec_init_val(size_t n, const u8* val, size_t data_size, genVec_delete_fn del_fn) 
+{
     if (val == NULL) {
         printf("val can't be null\n");
         return NULL;
@@ -62,7 +63,7 @@ genVec* genVec_init_val(size_t n, const void* val, size_t data_size, genVec_dele
     vec->size = n;  //capacity set to n in upper func 
 
     for (size_t i = 0; i < n; i++) {
-        memcpy((char*)vec->data + (i * data_size), val,data_size);
+        memcpy(vec->data + (i * data_size), val, data_size);
     }
 
     return vec;
@@ -77,7 +78,7 @@ void genVec_destroy(genVec* vec) {
     if (vec->del_fn) {
         // Custom cleanup for each element
         for (size_t i = 0; i < vec->size; i++) {
-            void* element = (char*)vec->data + (i * vec->data_size);
+            u8* element = vec->data + (i * vec->data_size);
             vec->del_fn(element);
         }
     }
@@ -97,7 +98,7 @@ void genVec_clear(genVec* vec) {
 
     if (vec->del_fn) {
         for (size_t i = 0; i < vec->size; i++) {
-        void* element = (char*)vec->data + (i * vec->data_size);
+        u8* element = vec->data + (i * vec->data_size);
         vec->del_fn(element);
         }
     }
@@ -123,7 +124,7 @@ void genVec_reserve(genVec* vec, size_t new_capacity)
         return;
     }
     
-    void* new_data = realloc(vec->data, new_capacity * vec->data_size);
+    u8* new_data = realloc(vec->data, new_capacity * vec->data_size);
     if (!new_data) {
         printf("reserve: realloc failed\n");
         return;
@@ -133,7 +134,7 @@ void genVec_reserve(genVec* vec, size_t new_capacity)
     vec->capacity = new_capacity;
 }
 
-void genVec_push(genVec* vec, const void* data) 
+void genVec_push(genVec* vec, const u8* data) 
 {
     if (!vec) {
         printf("push: vec is null\n");
@@ -150,12 +151,13 @@ void genVec_push(genVec* vec, const void* data)
         return;
     }
 
-    char* next_to_last = (char*)vec->data + (vec->size * vec->data_size); 
+    u8* next_to_last = vec->data + (vec->size * vec->data_size); 
     memcpy(next_to_last, data, vec->data_size);
+
     vec->size++;
 }
 
-int genVec_pop(genVec* vec, void* popped) {
+int genVec_pop(genVec* vec, u8* popped) {
     if (!vec) {
         printf("pop: vec is null\n");
         return -1;
@@ -165,7 +167,7 @@ int genVec_pop(genVec* vec, void* popped) {
         return -1;
     }
     
-    char* last_elm = (char*)vec->data + ((vec->size - 1) * vec->data_size);
+    u8* last_elm = vec->data + ((vec->size - 1) * vec->data_size);
     if (popped) { //only if buffer provided
         memcpy(popped, last_elm, vec->data_size);
     }
@@ -181,7 +183,7 @@ int genVec_pop(genVec* vec, void* popped) {
     return 0;
 }
 
-void genVec_get(genVec* vec, size_t i, void* out) {
+void genVec_get(const genVec* vec, size_t i, u8* out) {
     if (!vec) {
         printf("get: vec is null\n");
         return;
@@ -195,60 +197,80 @@ void genVec_get(genVec* vec, size_t i, void* out) {
         return;
     }
 
-    char* elm = (char*)vec->data + (i * vec->data_size);
+    u8* elm = vec->data + (i * vec->data_size);
     memcpy(out, elm, vec->data_size);
 }
 
-
-void genVec_replace(genVec* vec, size_t i, const void* data) {
-    if (!vec) {
-        printf("replace: vec is null\n");
-        return;
-    } 
-    if (i >= vec->size) {
-        printf("replace: index of of bounds\n");
+void genVec_insert(genVec* vec, size_t i, const u8* data)
+{
+    if (!vec || !data) {
+        printf("insert: vec or data or vec-data is null\n");
         return;
     }
-    if (!data) {
-        printf("replace: need a valid data variable\n");
-        return;
-    }   
-
-    char* to_replace = (char*)vec->data + (i * vec->data_size); 
-
-    if (vec->del_fn) {
-        vec->del_fn(to_replace);
-    }
-
-    memcpy(to_replace, data, vec->data_size);
-}
-
-void genVec_front(genVec* vec, void* out) {
-    if (!vec) {
-        printf("front: vec is null\n");
+    if (i > vec->size) {
+        printf("insert: index out of bounds\n");
         return;
     }
-    if (vec->size == 0) {
-        printf("front: vec is empty\n");
+    if (i == vec->size) {
+        genVec_push(vec, data);
         return;
     }
-    
-    memcpy(out, vec->data, vec->data_size);
+
+    // Check if we need to allocate or grow
+    if (vec->size >= vec->capacity || !vec->data) 
+        { genVec_grow(vec); }
+
+    // Calculate the number of elements to shift to right
+    size_t elements_to_shift = vec->size - i;
+    // the place where we want to insert
+    u8* src = vec->data + (i * vec->data_size);
+
+    // Shift elements right by one unit
+    u8* dest = vec->data + ((i + 1) * vec->data_size);
+    memmove(dest, src, elements_to_shift * vec->data_size);  // Use memmove for overlapping regions
+
+    //src pos is now free to insert (it's data copied to next location)
+    memcpy(src, data, vec->data_size);
+
+    vec->size++;  
 }
 
 
-void genVec_back(genVec* vec, void* out) {
-    if (!vec) {
-        printf("front: vec is null\n");
+void genVec_insert_multi(genVec* vec, size_t i, const u8* data, size_t num_data)
+{
+    if (!vec || !data || num_data == 0) 
+    {
+        printf("insertM: vec or data or vec-data is null\n");
         return;
     }
-    if (vec->size == 0) {
-        printf("front: vec is empty\n");
+    if (i > vec->size) {
+        printf("insertM: index out of bounds\n");
         return;
     }
-    
-    char* last_elm = (char*)vec->data + ((vec->size - 1) * vec->data_size);
-    memcpy(out, last_elm, vec->data_size);
+
+    // Calculate the number of elements to shift to right
+    size_t elements_to_shift = vec->size - i;
+
+    vec->size += num_data;
+
+    genVec_reserve(vec, vec->size);
+    if (!vec->data) {
+        printf("insertM: genvec reserve failed\n");
+        vec->size -= num_data;
+        return;
+    }
+
+    // the place where we want to insert
+    u8* src = vec->data + (i * vec->data_size);
+    if (elements_to_shift > 0) {
+        // Shift elements right by num_data units to right 
+        u8* dest = vec->data + ((i + num_data) * vec->data_size);
+
+        memmove(dest, src, elements_to_shift * vec->data_size);  // using memmove for overlapping regions
+    }
+
+    //src pos is now free to insert (it's data copied to next location)
+    memcpy(src, data, num_data * vec->data_size);
 }
 
 void genVec_remove(genVec* vec, size_t i) {
@@ -262,7 +284,7 @@ void genVec_remove(genVec* vec, size_t i) {
     }
 
     if (vec->del_fn) {
-        void* element = (char*)vec->data + (i * vec->data_size);
+        u8* element = vec->data + (i * vec->data_size);
         vec->del_fn(element);
     }
         // Calculate the number of elements to shift
@@ -270,8 +292,8 @@ void genVec_remove(genVec* vec, size_t i) {
     
     if (elements_to_shift > 0) {
         // Shift elements left to overwrite the deleted element
-        char* dest = (char*)vec->data + (i * vec->data_size);
-        char* src = (char*)vec->data + ((i + 1) * vec->data_size);
+        u8* dest = vec->data + (i * vec->data_size);
+        u8* src = vec->data + ((i + 1) * vec->data_size);
         
         memmove(dest, src, elements_to_shift * vec->data_size);  // Use memmove for overlapping regions
     }
@@ -281,6 +303,60 @@ void genVec_remove(genVec* vec, size_t i) {
     if (vec->size <= (size_t)((double)vec->capacity * SHRINK_AT)) 
         { genVec_shrink(vec); }
 }
+
+
+
+void genVec_replace(genVec* vec, size_t i, const u8* data) {
+    if (!vec) {
+        printf("replace: vec is null\n");
+        return;
+    } 
+    if (i >= vec->size) {
+        printf("replace: index of of bounds\n");
+        return;
+    }
+    if (!data) {
+        printf("replace: need a valid data variable\n");
+        return;
+    }   
+
+    u8* to_replace = vec->data + (i * vec->data_size); 
+
+    if (vec->del_fn) {
+        vec->del_fn(to_replace);
+    }
+
+    memcpy(to_replace, data, vec->data_size);
+}
+
+void genVec_front(const genVec* vec, u8* out) {
+    if (!vec) {
+        printf("front: vec is null\n");
+        return;
+    }
+    if (vec->size == 0) {
+        printf("front: vec is empty\n");
+        return;
+    }
+    
+    memcpy(out, vec->data, vec->data_size);
+}
+
+
+void genVec_back(const genVec* vec, u8* out) {
+    if (!vec) {
+        printf("back: vec is null\n");
+        return;
+    }
+    if (vec->size == 0) {
+        printf("back: vec is empty\n");
+        return;
+    }
+    
+    u8* last_elm = vec->data + ((vec->size - 1) * vec->data_size);
+    memcpy(out, last_elm, vec->data_size);
+}
+
 
 
 // this is a shallow copy if elements are pointers
@@ -295,6 +371,14 @@ genVec* genVec_copy(genVec* src) {
         printf("copy: genVec init failed\n");
         return NULL;
     }
+    if (src->size == 0) {
+        return vec;
+    }
+    if (!src->data || !vec->data) {
+        genVec_destroy(vec);
+        printf("copy: ivalid data pointers\n");
+        return NULL;
+    }
 
     memcpy(vec->data, src->data, src->size * src->data_size);
     vec->size = src->size;
@@ -302,7 +386,7 @@ genVec* genVec_copy(genVec* src) {
     return vec;
 }
 
-void genVec_print(genVec* vec, genVec_print_fn fn) { 
+void genVec_print(const genVec* vec, genVec_print_fn fn) { 
     if (!vec) {
         printf("print: vec is null\n");
         return;
@@ -314,7 +398,7 @@ void genVec_print(genVec* vec, genVec_print_fn fn) {
 
     printf("[ ");
     for (size_t i = 0; i < vec->size; i++) {
-        void* element = (char*)vec->data + (i * vec->data_size);
+        u8* element = vec->data + (i * vec->data_size);
         fn(element); 
         printf(" ");
     }
@@ -331,13 +415,12 @@ void genVec_grow(genVec* vec) {
     }
 
     size_t new_cap;
-    if (vec->capacity == 0) { new_cap = 1; }
-    else if (vec->capacity < 4) { new_cap = vec->capacity + 1; }
+    if (vec->capacity < 4) { new_cap = vec->capacity + 1; }
     else {
         new_cap = (size_t)((double)vec->capacity * GROWTH); 
     }
 
-    void* new_data = realloc(vec->data, new_cap * vec->data_size);
+    u8* new_data = realloc(vec->data, new_cap * vec->data_size);
     if (!new_data) { 
         printf("grow: realloc failed\n");
         return;
@@ -357,7 +440,7 @@ void genVec_shrink(genVec* vec) {
     size_t reduced_cap = (size_t)((double)vec->capacity * SHRINK_BY);
     if (reduced_cap < vec->size || reduced_cap == 0) { return; }
 
-    void* new_data = realloc(vec->data, reduced_cap * vec->data_size);
+    u8* new_data = realloc(vec->data, reduced_cap * vec->data_size);
     if (!new_data) {
         printf("shrink: realloc failed\n");
         return;
